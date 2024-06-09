@@ -20,3 +20,43 @@ To use this project, simply download or clone the repository:
 git clone https://github.com/yourusername/Tic-Tac-Toe.git
 ```
 
+Alternatively, you can directly copy the HTML, CSS, and JavaScript code into your project files.
+
+1. Usage
+Include the CSS and JavaScript files in your HTML file:
+```
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
