@@ -25,10 +25,17 @@ Alternatively, you can directly copy the HTML, CSS, and JavaScript code into you
 1. Usage
 Include the CSS and JavaScript files in your HTML file:
 ```
-
+<link rel="stylesheet" href="style.css" type="text/css">
+<script src="tictactoe.js" type="text/javascript"></script>
 ```
 
+2. Customize the design and layout in the style.css file as needed.
 
+## Contributing
+Contributions are welcome! If you find any bugs or have suggestions for improvements, please open an issue or submit a pull request.
+
+## License
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 
 
