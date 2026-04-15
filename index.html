@@ -1,292 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Neon Tic Tac Toe - Network Lobby</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --neon-x: #00f3ff;
-            --neon-o: #ff00ea;
-            --bg-color: #0b0b1a;
-            --glass-bg: rgba(20, 20, 40, 0.6);
-            --glass-border: rgba(255, 255, 255, 0.1);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Orbitron', sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            background-image: radial-gradient(circle at center, #1a1a3a 0%, #0b0b1a 100%);
-            color: white;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            overflow-x: hidden;
-            padding: 20px;
-        }
-
-        /* Background Animated Grid */
-        .bg-grid {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-size: 50px 50px;
-            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                              linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            z-index: -1;
-            animation: panBg 20s linear infinite;
-        }
-
-        @keyframes panBg {
-            0% { transform: translateY(0) translateX(0); }
-            100% { transform: translateY(-50px) translateX(-50px); }
-        }
-
-        h1.main-title {
-            font-size: clamp(2rem, 6vw, 4rem);
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 5px;
-            margin-top: 20px;
-            margin-bottom: 30px;
-            text-shadow: 0 0 10px rgba(255,255,255,0.5), 0 0 20px rgba(255,255,255,0.3);
-            text-align: center;
-            z-index: 10;
-        }
-
-        /* View Router Setup */
-        .view {
-            display: none;
-            width: 100%;
-            max-width: 1000px;
-            flex-direction: column;
-            align-items: center;
-            z-index: 10;
-        }
-
-        .view.active {
-            display: flex;
-            animation: fadeIn 0.5s ease forwards;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* --- HOME SCREEN SPECIFICS --- */
-        .home-layout {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 30px;
-            width: 100%;
-            justify-content: center;
-        }
-
-        .panel {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: clamp(20px, 4vw, 30px);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-            flex: 1;
-            min-width: min(100%, 300px); /* Responsive adjustment */
-            display: flex;
-            flex-direction: column;
-        }
-
-        .panel h2 {
-            font-size: clamp(1.2rem, 3vw, 1.5rem);
-            margin-bottom: 25px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding-bottom: 10px;
-            letter-spacing: 3px;
-            color: #aaa;
-            text-transform: uppercase;
-            text-align: center;
-        }
-
-        .feature-list {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .feature-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            font-size: clamp(0.9rem, 2vw, 1.1rem);
-            letter-spacing: 1px;
-            background: rgba(0,0,0,0.3);
-            padding: 15px;
-            border-radius: 10px;
-            border-left: 3px solid rgba(255,255,255,0.1);
-            transition: all 0.3s ease;
-        }
-
-        .feature-item:hover {
-            transform: translateX(5px);
-            background: rgba(255,255,255,0.05);
-            border-left-color: var(--neon-x);
-        }
-
-        .feature-icon {
-            font-size: 1.5rem;
-            flex-shrink: 0;
-        }
-
-        /* Action Buttons & Inputs */
-        .action-btn {
-            background: transparent;
-            color: white;
-            font-size: clamp(0.9rem, 2vw, 1.1rem);
-            padding: 15px 20px;
-            border: 2px solid rgba(255,255,255,0.2);
-            border-radius: 12px;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            width: 100%;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-
-        .action-btn::before {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%; width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-            transition: all 0.5s ease;
-        }
-
-        .action-btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-        }
-
-        .action-btn:hover:not(:disabled)::before {
-            left: 100%;
-        }
-
-        .action-btn:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-            animation: pulse 1.5s infinite;
-        }
-
-        .btn-cyan { border-color: var(--neon-x); color: var(--neon-x); text-shadow: 0 0 10px var(--neon-x); }
-        .btn-cyan:hover:not(:disabled) { background: rgba(0, 243, 255, 0.1); box-shadow: 0 0 15px var(--neon-x); }
-
-        .btn-magenta { border-color: var(--neon-o); color: var(--neon-o); text-shadow: 0 0 10px var(--neon-o); }
-        .btn-magenta:hover:not(:disabled) { background: rgba(255, 0, 234, 0.1); box-shadow: 0 0 15px var(--neon-o); }
-
-        .btn-white:hover:not(:disabled) { background: rgba(255, 255, 255, 0.1); box-shadow: 0 0 15px rgba(255,255,255,0.5); }
-
-        .join-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            width: 100%;
-        }
-
-        .join-input {
-            flex: 2;
-            background: rgba(0,0,0,0.4);
-            border: 2px solid rgba(255,255,255,0.1);
-            color: white;
-            padding: 15px;
-            border-radius: 12px;
-            font-family: 'Orbitron', sans-serif;
-            font-size: clamp(0.9rem, 2vw, 1.1rem);
-            text-align: center;
-            letter-spacing: 3px;
-            outline: none;
-            transition: all 0.3s ease;
-            min-width: 0; /* Prevents flex blowout on mobile */
-        }
-
-        .join-input:focus {
-            border-color: var(--neon-o);
-            box-shadow: 0 0 10px rgba(255, 0, 234, 0.3);
-        }
-
-        .join-group .action-btn {
-            flex: 1;
-            margin-bottom: 0;
-            padding: 15px 10px;
-        }
-
-        .divider {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            color: #555;
-            margin: 10px 0 25px 0;
-        }
-        .divider::before, .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        .divider span {
-            padding: 0 15px;
-            font-size: 0.9rem;
-            letter-spacing: 2px;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; box-shadow: 0 0 20px rgba(255,255,255,0.2); }
-            100% { opacity: 0.6; }
-        }
-
-        /* --- FOOTER & WATERMARK --- */
-        .site-footer {
-            margin-top: auto; /* Pushes footer to the bottom */
-            padding-top: 40px;
-            padding-bottom: 10px;
-            text-align: center;
-            z-index: 10;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .copyright-text {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: clamp(0.7rem, 2vw, 0.9rem);
-            margin-bottom: 8px;
-            letter-spacing: 1px;
-        }
-
-        .watermark {
-            font-size: clamp(0.8rem, 2vw, 1.1rem);
-            font-weight: 700;
-            color: rgba(255, 255, 255, 0.08); /* Faint watermark color */
-            letter-spacing: 5px;
-            text-transform: uppercase;
-            user-select: none;
-            pointer-events: none;
-            white-space: nowrap;
-            margin-top: 5px;
-        }
-
-    </style>
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
+
 <body>
 
     <div class="bg-grid"></div>
@@ -296,17 +18,19 @@
     <!-- ==================== HOME LOBBY SCREEN ==================== -->
     <div id="view-home" class="view active">
         <div class="home-layout">
-            
+
             <!-- System Specs (Features) -->
             <div class="panel features">
                 <h2>System_Specs</h2>
                 <ul class="feature-list">
                     <li class="feature-item">
-                        <span class="feature-icon" style="color: var(--neon-x); text-shadow: 0 0 10px var(--neon-x);">⚡</span>
+                        <span class="feature-icon"
+                            style="color: var(--neon-x); text-shadow: 0 0 10px var(--neon-x);">⚡</span>
                         <span>Quantum Latency Multiplayer</span>
                     </li>
                     <li class="feature-item">
-                        <span class="feature-icon" style="color: var(--neon-o); text-shadow: 0 0 10px var(--neon-o);">🎨</span>
+                        <span class="feature-icon"
+                            style="color: var(--neon-o); text-shadow: 0 0 10px var(--neon-o);">🎨</span>
                         <span>Holographic Glassmorphism UI</span>
                     </li>
                     <li class="feature-item">
@@ -323,18 +47,18 @@
             <!-- Network Access (Multiplayer Actions) -->
             <div class="panel lobby">
                 <h2>Network_Access</h2>
-                
+
                 <button id="btn-create-room" class="action-btn btn-cyan">Create Room [HOST]</button>
-                
+
                 <div class="join-group">
                     <input type="text" id="room-code-input" class="join-input" placeholder="ROOM ID" maxlength="6">
                     <button id="btn-join-room" class="action-btn btn-magenta">Join</button>
                 </div>
-                
+
                 <button id="btn-play-random" class="action-btn btn-white">Play Random [AUTO]</button>
-                
+
                 <div class="divider"><span>OR</span></div>
-                
+
                 <button id="btn-play-local" class="action-btn">Local Co-op [OFFLINE]</button>
             </div>
 
@@ -347,65 +71,7 @@
         <div class="watermark">logusivam vision</div>
     </footer>
 
-    <script>
-        window.addEventListener('DOMContentLoaded', () => {
-            // Buttons
-            const btnCreate = document.getElementById('btn-create-room');
-            const btnJoin = document.getElementById('btn-join-room');
-            const btnRandom = document.getElementById('btn-play-random');
-            const btnLocal = document.getElementById('btn-play-local');
-            const roomInput = document.getElementById('room-code-input');
-            
-            // Path to your external game file
-            const gameFileUrl = 'games/gamePlay.html';
-
-            // Simulate Networking Delays
-            const simulateConnection = (btnElement, loadingText, finalAction) => {
-                const originalText = btnElement.innerText;
-                btnElement.innerText = loadingText;
-                btnElement.disabled = true;
-                
-                setTimeout(() => {
-                    btnElement.innerText = originalText;
-                    btnElement.disabled = false;
-                    finalAction();
-                }, 1500);
-            };
-
-            // Event Listeners for Lobby linking to the game file
-            btnCreate.addEventListener('click', () => {
-                const roomCode = Math.random().toString(36).substring(2, 6).toUpperCase();
-                simulateConnection(btnCreate, `HOSTING ID: ${roomCode}...`, () => {
-                    window.location.href = `${gameFileUrl}?mode=host&room=${roomCode}`;
-                });
-            });
-
-            btnJoin.addEventListener('click', () => {
-                const code = roomInput.value.trim().toUpperCase();
-                if (code.length >= 3) {
-                    simulateConnection(btnJoin, `CONNECTING...`, () => {
-                        window.location.href = `${gameFileUrl}?mode=join&room=${code}`;
-                    });
-                } else {
-                    roomInput.style.borderColor = '#ff3860';
-                    roomInput.style.boxShadow = '0 0 10px rgba(255, 56, 96, 0.5)';
-                    setTimeout(() => {
-                        roomInput.style.borderColor = 'rgba(255,255,255,0.1)';
-                        roomInput.style.boxShadow = 'none';
-                    }, 1000);
-                }
-            });
-
-            btnRandom.addEventListener('click', () => {
-                simulateConnection(btnRandom, 'SEARCHING GRID...', () => {
-                    window.location.href = `${gameFileUrl}?mode=random`;
-                });
-            });
-
-            btnLocal.addEventListener('click', () => {
-                window.location.href = `${gameFileUrl}?mode=local`;
-            });
-        });
-    </script>
+    <script src="assets/js/script.js"></script>
 </body>
+
 </html>
