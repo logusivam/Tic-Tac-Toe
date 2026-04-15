@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Tic Tac Toe - Network Lobby</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+
+    <div class="bg-grid"></div>
+
+    <h1 class="main-title">Tic Tac Toe</h1>
+
+    <!-- ==================== HOME LOBBY SCREEN ==================== -->
+    <div id="view-home" class="view active">
+        <div class="home-layout">
+
+            <!-- System Specs (Features) -->
+            <div class="panel features">
+                <h2>System_Specs</h2>
+                <ul class="feature-list">
+                    <li class="feature-item">
+                        <span class="feature-icon"
+                            style="color: var(--neon-x); text-shadow: 0 0 10px var(--neon-x);">⚡</span>
+                        <span>Quantum Latency Multiplayer</span>
+                    </li>
+                    <li class="feature-item">
+                        <span class="feature-icon"
+                            style="color: var(--neon-o); text-shadow: 0 0 10px var(--neon-o);">🎨</span>
+                        <span>Holographic Glassmorphism UI</span>
+                    </li>
+                    <li class="feature-item">
+                        <span class="feature-icon" style="color: #fff; text-shadow: 0 0 10px #fff;">🛡️</span>
+                        <span>Secure Neural Matchmaking</span>
+                    </li>
+                    <li class="feature-item" style="opacity: 0.6;">
+                        <span class="feature-icon" style="color: #aaa;">🤖</span>
+                        <span>Advanced AI Opponent <small>(WIP)</small></span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Network Access (Multiplayer Actions) -->
+            <div class="panel lobby">
+                <h2>Network_Access</h2>
+
+                <button id="btn-create-room" class="action-btn btn-cyan">Create Room [HOST]</button>
+
+                <div class="join-group">
+                    <input type="text" id="room-code-input" class="join-input" placeholder="ROOM ID" maxlength="6">
+                    <button id="btn-join-room" class="action-btn btn-magenta">Join</button>
+                </div>
+
+                <button id="btn-play-random" class="action-btn btn-white">Play Random [AUTO]</button>
+
+                <div class="divider"><span>OR</span></div>
+
+                <button id="btn-play-local" class="action-btn">Local Co-op [OFFLINE]</button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ==================== FOOTER SECTION ==================== -->
+    <footer class="site-footer">
+        <p class="copyright-text">&copy; 2026 Neon Tic Tac Toe. All Rights Reserved.</p>
+        <div class="watermark">logusivam vision</div>
+    </footer>
+
+    <!-- User Info Modal -->
+    <div class="modal-overlay" id="user-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; justify-content: center; align-items: center;">
+        <div class="modal-content" style="background: rgba(10, 10, 30, 0.9); padding: 2rem; border-radius: 10px; border: 1px solid var(--neon-cyan); box-shadow: 0 0 20px rgba(0, 255, 255, 0.2); width: 300px; text-align: center;">
+            <h2 style="color: white; margin-bottom: 20px;">Player Info</h2>
+            <div id="user-modal-error" style="color: #ff3860; display: none; margin-bottom: 10px;"></div>
+            <input type="text" id="user-name" placeholder="Name" class="join-input" style="width: 100%; margin-bottom: 15px; text-align: center;">
+            <input type="number" id="user-age" placeholder="Age" class="join-input" style="width: 100%; margin-bottom: 20px; text-align: center;">
+            <button id="btn-submit-user" class="action-btn btn-cyan" style="width: 100%;">Submit</button>
+            <button id="btn-close-modal" class="action-btn btn-white" style="width: 100%; margin-top: 10px;">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Error Toast -->
+    <div id="error-toast" style="display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #ff3860; color: white; padding: 10px 20px; border-radius: 5px; z-index: 200; box-shadow: 0 0 10px rgba(255,56,96,0.5);">
+    </div>
+
+    <script src="assets/js/script.js"></script>
+</body>
+
+</html>

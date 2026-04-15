@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Tic Tac Toe</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+
+<body>
+
+    <div class="bg-grid"></div>
+
+    <h1>Tic Tac Toe</h1>
+
+    <div class="scoreboard">
+        <div class="score-box x">
+            <span class="score-label" id="label-x">PLAYER X</span>
+            <span class="score-value" id="score-x">0</span>
+            <div style="font-size: 0.6em; color: var(--neon-x); margin-top: 5px;">Victories: <span id="vic-x">0</span></div>
+        </div>
+        <div class="score-box ties">
+            <span class="score-label">TIES</span>
+            <span class="score-value" id="score-ties">0</span>
+        </div>
+        <div class="score-box o">
+            <span class="score-label" id="label-o">PLAYER O</span>
+            <span class="score-value" id="score-o">0</span>
+            <div style="font-size: 0.6em; color: var(--neon-o); margin-top: 5px;">Victories: <span id="vic-o">0</span></div>
+        </div>
+    </div>
+
+    <div class="turn-indicator" id="turn-indicator">
+        TURN: <span class="display-player playerX" id="display-player">X</span>
+    </div>
+
+    <main class="board" id="board">
+        <div class="tile"></div>
+        <div class="tile"></div>
+        <div class="tile"></div>
+        <div class="tile"></div>
+        <div class="tile"></div>
+        <div class="tile"></div>
+        <div class="tile"></div>
+        <div class="tile"></div>
+        <div class="tile"></div>
+    </main>
+
+    <div class="controls">
+        <div id="room-info" style="display: none; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px; border: 1px solid var(--neon-cyan);">
+            ROOM: <span id="room-code-display" style="font-weight: bold; margin-right: 15px;">XXXX</span>
+            <button id="copy-btn" class="action-btn" style="padding: 5px 15px; font-size: 0.8em; margin: 0;">Copy</button>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal-content">
+            <div class="announcer" id="announcer"></div>
+            <button class="modal-btn" id="play-again">Play Again</button>
+        </div>
+    </div>
+
+    <!-- Error Toast -->
+    <div id="error-toast" style="display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #ff3860; color: white; padding: 10px 20px; border-radius: 5px; z-index: 200; box-shadow: 0 0 10px rgba(255,56,96,0.5);">
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="../assets/js/game.js"></script>
+</body>
+
+</html>
