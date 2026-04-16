@@ -4,7 +4,7 @@ A real-time, ultra-fast, cross-platform multiplayer Tic-Tac-Toe web application.
 
 **Designed and Licensed by Loganathan**.
 
-![Gameplay Screenshot](https://github.com/user-attachments/assets/9f45ba67-cfc6-46ca-a100-5b0e64215d6e) *(Note: Add your gameplay screenshots into the assets directory)*
+![Gameplay Screenshot](https://github.com/user-attachments/assets/9f45ba67-cfc6-46ca-a100-5b0e64215d6e) 
 
 ---
 
