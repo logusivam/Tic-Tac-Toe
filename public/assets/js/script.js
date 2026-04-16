@@ -1,7 +1,9 @@
+import BACKEND_URL from './config.js';
+
 window.addEventListener('DOMContentLoaded', () => {
     let socket = null;
     if (typeof io !== 'undefined') {
-        socket = io();
+        socket = io(BACKEND_URL);
     }
     // Buttons
     const btnCreate = document.getElementById('btn-create-room');
@@ -25,6 +27,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
     let pendingAction = null; // 'create' or 'join'
     let pendingRoomCode = null;
+    let localPlayer1Id = null;
+    const modalTitle = document.getElementById('modal-title');
     
     // Register global user map if socket exists
     if (socket) {
@@ -92,16 +96,27 @@ window.addEventListener('DOMContentLoaded', () => {
         }, 3000);
     };
 
-    const showModal = (action, code = null) => {
-        // Ask for user every time if you want, but caching is better
-        const savedUserId = sessionStorage.getItem('userId');
-        if (savedUserId) {
-            proceedAction(action, code, savedUserId);
-            return;
+    const showModal = (action, code = null, titleOverride = 'Player Info') => {
+        if(modalTitle) modalTitle.innerText = titleOverride;
+        
+        if (action !== 'local_p2') {
+            const savedUserId = sessionStorage.getItem('userId');
+            if (savedUserId) {
+                if (action === 'local_p1') {
+                    localPlayer1Id = savedUserId;
+                    showModal('local_p2', null, 'Player 2 Info');
+                } else {
+                    proceedAction(action, code, savedUserId);
+                }
+                return;
+            }
         }
 
         pendingAction = action;
         pendingRoomCode = code;
+        nameInput.value = '';
+        ageInput.value = '';
+        errorMsg.style.display = 'none';
         userModal.style.display = 'flex';
     };
 
@@ -131,6 +146,11 @@ window.addEventListener('DOMContentLoaded', () => {
             simulateConnection(btnRandom, 'BROADCASTING...', () => {
                 window.location.href = `${gameFileUrl}?mode=random&room=${randomRoomCode}&userId=${userId}`;
             });
+        } else if (action === 'local') {
+            const randomRoomCode = 'L-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+            simulateConnection(btnLocal, 'STARTING...', () => {
+                window.location.href = `${gameFileUrl}?mode=local&room=${randomRoomCode}&p1=${localPlayer1Id}&p2=${userId}`;
+            });
         }
     };
 
@@ -148,7 +168,7 @@ window.addEventListener('DOMContentLoaded', () => {
         btnSubmitUser.innerText = 'Creating Profile...';
 
         try {
-            const res = await fetch('/api/v1/users', {
+            const res = await fetch(`${BACKEND_URL}/api/v1/users`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, age: Number(age) })
@@ -157,11 +177,22 @@ window.addEventListener('DOMContentLoaded', () => {
             if (!res.ok) throw new Error('Failed to create profile');
 
             const userData = await res.json();
-            sessionStorage.setItem('userId', userData._id);
-            sessionStorage.setItem('userName', userData.name);
             
-            hideModal();
-            proceedAction(pendingAction, pendingRoomCode, userData._id);
+            if (pendingAction === 'local_p1') {
+                sessionStorage.setItem('userId', userData._id);
+                sessionStorage.setItem('userName', userData.name);
+                hideModal();
+                localPlayer1Id = userData._id;
+                showModal('local_p2', null, 'Player 2 Info');
+            } else if (pendingAction === 'local_p2') {
+                hideModal();
+                proceedAction('local', null, userData._id);
+            } else {
+                sessionStorage.setItem('userId', userData._id);
+                sessionStorage.setItem('userName', userData.name);
+                hideModal();
+                proceedAction(pendingAction, pendingRoomCode, userData._id);
+            }
             
         } catch (err) {
             errorMsg.innerText = err.message;
@@ -217,6 +248,6 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 
     btnLocal.addEventListener('click', () => {
-        window.location.href = `${gameFileUrl}?mode=local`;
+        showModal('local_p1', null, 'Player 1 Info');
     });
 });

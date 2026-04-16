@@ -106,14 +106,41 @@ module.exports = (io) => {
             }
         });
 
-        socket.on('makeMove', async ({ index }) => {
+        socket.on('joinLocalRoom', async ({ roomId, p1, p2 }) => {
+            const user1 = await User.findById(p1).catch(() => null);
+            const user2 = await User.findById(p2).catch(() => null);
+            socket.join(roomId);
+            socket.roomId = roomId;
+            socket.isLocal = true;
+            
+            activeGames[roomId] = {
+                isLocal: true,
+                board: Array(9).fill(''),
+                players: { X: p1, O: p2 },
+                playerNames: { X: user1 ? user1.name : "Player 1", O: user2 ? user2.name : "Player 2" },
+                playerStats: { X: user1 ? user1.victories : 0, O: user2 ? user2.victories : 0 },
+                turn: 'X',
+                scores: { X: 0, TIES: 0, O: 0 }
+            };
+            socket.emit('joined', { role: 'LOCAL', gameState: activeGames[roomId] });
+            io.to(roomId).emit('gameStart', { gameState: activeGames[roomId] });
+        });
+
+        socket.on('makeMove', async ({ index, localUserId }) => {
             const { roomId, userId } = socket;
-            if(!roomId || !userId) return;
+            if(!roomId) return;
 
             const game = activeGames[roomId];
             if (!game || !game.players.O) return; 
             
-            const role = game.players.X === userId ? 'X' : (game.players.O === userId ? 'O' : null);
+            let effectiveUserId = userId;
+            if (game.isLocal && localUserId) {
+                effectiveUserId = localUserId;
+            } else if (!effectiveUserId) {
+                return;
+            }
+            
+            const role = game.players.X === effectiveUserId ? 'X' : (game.players.O === effectiveUserId ? 'O' : null);
             if (!role || game.turn !== role || game.board[index] !== '') return;
             
             game.board[index] = role;
@@ -147,14 +174,21 @@ module.exports = (io) => {
             }
         });
 
-        socket.on('quitGame', async () => {
+        socket.on('quitGame', async ({ localUserId } = {}) => {
             const { roomId, userId } = socket;
-            if(!roomId || !userId) return;
+            if(!roomId) return;
 
             const game = activeGames[roomId];
             if (!game || !game.players.O || game.turn === null) return; // not playing
+            
+            let effectiveUserId = userId;
+            if (game.isLocal && localUserId) {
+                effectiveUserId = localUserId;
+            } else if (!effectiveUserId) {
+                return;
+            }
 
-            const role = game.players.X === userId ? 'X' : (game.players.O === userId ? 'O' : null);
+            const role = game.players.X === effectiveUserId ? 'X' : (game.players.O === effectiveUserId ? 'O' : null);
             if (!role) return;
 
             game.turn = null; 
@@ -176,6 +210,13 @@ module.exports = (io) => {
              const { roomId, userId } = socket;
              const game = activeGames[roomId];
              if(!game) return;
+
+             if (game.isLocal) {
+                 game.board = Array(9).fill('');
+                 game.turn = 'X';
+                 io.to(roomId).emit('gameStart', { gameState: game });
+                 return;
+             }
 
              const isHost = game.players.X === userId;
              const targetUserId = isHost ? game.players.O : game.players.X;

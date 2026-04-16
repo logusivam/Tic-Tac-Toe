@@ -1,11 +1,14 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const socket = io();
+import BACKEND_URL from './config.js';
 
-    // Query params
+document.addEventListener('DOMContentLoaded', () => {
+    const socket = io(BACKEND_URL);
+
     const urlParams = new URLSearchParams(window.location.search);
     const mode = urlParams.get('mode');
     const roomId = urlParams.get('room');
     const userId = urlParams.get('userId');
+    const p1 = urlParams.get('p1');
+    const p2 = urlParams.get('p2');
 
     // UI Elements
     const tiles = Array.from(document.querySelectorAll('.tile'));
@@ -54,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    if (!roomId || !userId) {
+    if (!roomId || (!userId && mode !== 'local')) {
         showError('Missing Room ID or User ID. Redirecting...');
         setTimeout(() => window.location.href = '../index.html', 2000);
         return;
@@ -66,7 +69,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Connect to room
-    socket.emit('joinRoom', { roomId, userId });
+    if (mode === 'local') {
+         socket.emit('joinLocalRoom', { roomId, p1, p2 });
+    } else {
+         socket.emit('joinRoom', { roomId, userId });
+    }
 
     socket.on('errorMsg', (data) => {
         showError(data.message);
@@ -216,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }, 1000);
         
-        if (myRole === 'X') {
+        if (myRole === 'X' || myRole === 'LOCAL') {
             playAgainBtn.style.display = 'block';
             playAgainBtn.innerText = 'Play Again';
         } else {
@@ -232,7 +239,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const updateTurnDisplay = () => {
         if (!currentTurn) return; // game over
-        isMyTurn = (myRole === currentTurn);
+        if (myRole === 'LOCAL') {
+            isMyTurn = true;
+        } else {
+            isMyTurn = (myRole === currentTurn);
+        }
         displayPlayer.innerText = currentTurn;
         displayPlayer.className = `display-player player${currentTurn}`;
     };
@@ -240,7 +251,11 @@ document.addEventListener('DOMContentLoaded', () => {
     tiles.forEach((tile, index) => {
         tile.addEventListener('click', () => {
             if (isMyTurn && !tile.innerText) {
-                socket.emit('makeMove', { index });
+                let activeId = userId;
+                if (myRole === 'LOCAL') {
+                    activeId = currentTurn === 'X' ? p1 : p2;
+                }
+                socket.emit('makeMove', { index, localUserId: activeId });
             }
         });
     });
@@ -277,15 +292,24 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     btnQuitMatch.addEventListener('click', () => {
-         socket.emit('quitGame');
+         let activeId = userId;
+         if (myRole === 'LOCAL') {
+             activeId = currentTurn === 'X' ? p1 : p2;
+         }
+         socket.emit('quitGame', { localUserId: activeId });
     });
 
     playAgainBtn.addEventListener('click', () => {
-        if (myRole === 'X') {
+        if (myRole === 'X' || myRole === 'LOCAL') {
             clearInterval(countdownTimer);
             timerContainer.style.display = 'none';
             playAgainAttempts++;
             
+            if (myRole === 'LOCAL') {
+                 socket.emit('playAgainReq');
+                 return;
+            }
+
             modalPlayerA.innerText = labelX.innerText;
             modalPlayerB.innerText = 'Waiting...';
             
