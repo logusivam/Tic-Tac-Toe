@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalTimer = document.getElementById('modal-timer');
     const playAgainBtn = document.getElementById('play-again');
     const btnExitRoom = document.getElementById('btn-exit-room');
+    const btnSendGlobal = document.getElementById('btn-send-global');
 
     let myRole = null;
     let isMyTurn = false;
@@ -59,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    if (mode === 'host' || mode === 'join') {
+    if (mode === 'host' || mode === 'join' || mode === 'random') {
         roomInfo.style.display = 'flex';
         displayRoomCode.innerText = roomId;
     }
@@ -98,6 +99,34 @@ document.addEventListener('DOMContentLoaded', () => {
         
         updateScores(state.scores);
         
+        if (mode === 'random' && !state.players.O) {
+            modal.classList.add('active');
+            document.getElementById('win-status-title').innerHTML = 'RANDOM LOBBY';
+            announcer.innerHTML = '';
+            modalPlayerA.innerText = state.playerNames.X || 'PLAYER X';
+            modalPlayerB.innerText = 'Waiting...';
+            
+            timerContainer.style.display = 'none';
+            playAgainBtn.style.display = 'none';
+            btnSendGlobal.style.display = 'block';
+            btnExitRoom.style.display = 'block';
+            
+            btnSendGlobal.disabled = true;
+            let cooldown = 20;
+            btnSendGlobal.innerText = `Cooldown (${cooldown}s)`;
+            const cdTimer = setInterval(() => {
+                 cooldown--;
+                 if (btnSendGlobal) btnSendGlobal.innerText = `Cooldown (${cooldown}s)`;
+                 if(cooldown <= 0) {
+                      clearInterval(cdTimer);
+                      if(btnSendGlobal) {
+                          btnSendGlobal.disabled = false;
+                          btnSendGlobal.innerText = 'Send Request';
+                      }
+                 }
+            }, 1000);
+        }
+        
         // update board
         state.board.forEach((val, i) => {
             tiles[i].innerText = val;
@@ -123,6 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         btnLeaveEarly.style.display = 'none';
         btnQuitMatch.style.display = 'block';
+        btnSendGlobal.style.display = 'none';
         
         // clear local board just in case
         tiles.forEach(tile => {
@@ -168,6 +198,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if(reason) announcer.innerHTML += `<div style="font-size: 0.5em; color: #aaa; margin-top: 10px;">${reason}</div>`;
         
         modal.classList.add('active');
+        document.getElementById('win-status-title').innerHTML = 'GAME OVER';
+        btnSendGlobal.style.display = 'none';
         timerContainer.style.display = 'block';
         playAgainAttempts = 0;
         
@@ -224,6 +256,25 @@ document.addEventListener('DOMContentLoaded', () => {
          socket.emit('hostExit');
          window.location.href = '../index.html';
     });
+    
+    btnSendGlobal.addEventListener('click', () => {
+         const userName = labelX.innerText;
+         socket.emit('sendGlobalInvite', { roomId, hostName: userName });
+         btnSendGlobal.disabled = true;
+         let cooldown = 20;
+         btnSendGlobal.innerText = `Cooldown (${cooldown}s)`;
+         const cdTimer = setInterval(() => {
+              cooldown--;
+              if(btnSendGlobal) btnSendGlobal.innerText = `Cooldown (${cooldown}s)`;
+              if(cooldown <= 0) {
+                   clearInterval(cdTimer);
+                   if(btnSendGlobal) {
+                       btnSendGlobal.disabled = false;
+                       btnSendGlobal.innerText = 'Send Request';
+                   }
+              }
+         }, 1000);
+    });
 
     btnQuitMatch.addEventListener('click', () => {
          socket.emit('quitGame');
@@ -231,12 +282,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     playAgainBtn.addEventListener('click', () => {
         if (myRole === 'X') {
-            if (playAgainBtn.innerText === 'Exit') {
-                socket.emit('hostExit');
-                window.location.href = '../index.html';
-                return;
-            }
-
             clearInterval(countdownTimer);
             timerContainer.style.display = 'none';
             playAgainAttempts++;
@@ -245,21 +290,26 @@ document.addEventListener('DOMContentLoaded', () => {
             modalPlayerB.innerText = 'Waiting...';
             
             socket.emit('playAgainReq');
-            
-            playAgainBtn.innerText = 'Exit';
+            playAgainBtn.disabled = true;
             
             if (playAgainAttempts === 1) {
                 let waitTime = 10;
                 clearInterval(waitInterval);
+                playAgainBtn.innerText = `Cooldown (${waitTime}s)`;
+                
                 waitInterval = setInterval(() => {
                     waitTime--;
+                    if (playAgainBtn) playAgainBtn.innerText = `Cooldown (${waitTime}s)`;
                     if (waitTime <= 0) {
                         clearInterval(waitInterval);
-                        if (playAgainBtn.innerText === 'Exit') {
+                        if (playAgainBtn) {
+                            playAgainBtn.disabled = false;
                             playAgainBtn.innerText = 'Play Again';
                         }
                     }
                 }, 1000);
+            } else {
+                playAgainBtn.innerText = 'Request Sent';
             }
         }
     });

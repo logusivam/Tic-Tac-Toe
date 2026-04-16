@@ -25,6 +25,8 @@ const onlineUsers = {};
 module.exports = (io) => {
     io.on('connection', (socket) => {
         
+        socket.join('lobby');
+        
         socket.on('registerUser', ({ userId }) => {
             if (userId) {
                 onlineUsers[userId] = socket.id;
@@ -50,6 +52,7 @@ module.exports = (io) => {
             if (userId) {
                 onlineUsers[userId] = socket.id;
                 socket.userId = userId;
+                socket.leave('lobby');
             }
 
             const roomClients = io.sockets.adapter.rooms.get(roomId);
@@ -181,6 +184,10 @@ module.exports = (io) => {
                  const requesterName = isHost ? game.playerNames.X : game.playerNames.O;
                  io.to(onlineUsers[targetUserId]).emit('playAgainInvite', { roomId, hostName: requesterName });
              }
+        });
+        
+        socket.on('sendGlobalInvite', ({ roomId, hostName }) => {
+             socket.to('lobby').emit('globalPlayInvite', { roomId, hostName });
         });
         
         socket.on('hostExit', () => {

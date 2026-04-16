@@ -33,15 +33,38 @@ window.addEventListener('DOMContentLoaded', () => {
             socket.emit('registerUser', { userId: savedGlobalId });
         }
         
+        socket.on('globalPlayInvite', ({ roomId, hostName }) => {
+            inviteHostName.innerText = hostName;
+            inviteToast.querySelector('h3').innerText = "Random Match Request!";
+            inviteToast.style.display = 'block';
+            
+            btnAcceptInvite.onclick = () => {
+                inviteToast.style.display = 'none';
+                if (socket) {
+                    pendingRoomCode = roomId;
+                    socket.emit('checkRoom', { roomId });
+                } else {
+                    showModal('join', roomId);
+                }
+            };
+            
+            btnDeclineInvite.onclick = () => {
+                inviteToast.style.display = 'none';
+            };
+        });
+        
         socket.on('playAgainInvite', ({ roomId, hostName }) => {
             inviteHostName.innerText = hostName;
             inviteToast.style.display = 'block';
             
             btnAcceptInvite.onclick = () => {
                 inviteToast.style.display = 'none';
-                simulateConnection(btnJoin, `CONNECTING...`, () => {
-                    window.location.href = `${gameFileUrl}?mode=join&room=${roomId}&userId=${savedGlobalId || sessionStorage.getItem('userId')}`;
-                });
+                if (socket) {
+                    pendingRoomCode = roomId;
+                    socket.emit('checkRoom', { roomId });
+                } else {
+                    showModal('join', roomId);
+                }
             };
             
             btnDeclineInvite.onclick = () => {
@@ -96,8 +119,17 @@ window.addEventListener('DOMContentLoaded', () => {
                 window.location.href = `${gameFileUrl}?mode=host&room=${newRoomCode}&userId=${userId}`;
             });
         } else if (action === 'join') {
-            simulateConnection(btnJoin, `JOINING...`, () => {
+            simulateConnection(btnJoin, `...`, () => {
                 window.location.href = `${gameFileUrl}?mode=join&room=${roomCode}&userId=${userId}`;
+            });
+        } else if (action === 'random') {
+            const randomRoomCode = Math.random().toString(36).substring(2, 6).toUpperCase();
+            if (socket) {
+                const userName = sessionStorage.getItem('userName') || 'A Player';
+                socket.emit('sendGlobalInvite', { roomId: randomRoomCode, hostName: userName });
+            }
+            simulateConnection(btnRandom, 'BROADCASTING...', () => {
+                window.location.href = `${gameFileUrl}?mode=random&room=${randomRoomCode}&userId=${userId}`;
             });
         }
     };
@@ -181,11 +213,7 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 
     btnRandom.addEventListener('click', () => {
-        const savedUserId = sessionStorage.getItem('userId');
-        if (!savedUserId) { showError("Create or Join Room to play first!"); return; }
-        simulateConnection(btnRandom, 'SEARCHING GRID...', () => {
-            window.location.href = `${gameFileUrl}?mode=random&userId=${savedUserId}`;
-        });
+        showModal('random');
     });
 
     btnLocal.addEventListener('click', () => {
