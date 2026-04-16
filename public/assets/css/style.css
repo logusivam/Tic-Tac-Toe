@@ -329,3 +329,124 @@
      white-space: nowrap;
      margin-top: 5px;
  }
+
+ /* --- GAMEPLAY SCREEN SPECIFICS --- */
+ .scoreboard {
+     display: flex;
+     gap: 20px;
+     margin-bottom: 30px;
+     width: 100%;
+     max-width: 600px;
+     z-index: 10;
+ }
+ 
+ .score-box {
+     flex: 1;
+     background: var(--glass-bg);
+     border: 1px solid var(--glass-border);
+     padding: 15px;
+     border-radius: 15px;
+     text-align: center;
+     display: flex;
+     flex-direction: column;
+ }
+ 
+ .score-box.x { border-bottom: 3px solid var(--neon-x); }
+ .score-box.o { border-bottom: 3px solid var(--neon-o); }
+ 
+ .board {
+     display: grid;
+     grid-template-columns: repeat(3, 1fr);
+     grid-template-rows: repeat(3, 1fr);
+     gap: 15px;
+     width: min(90vw, 400px);
+     height: min(90vw, 400px);
+     margin-bottom: 40px;
+     z-index: 10;
+ }
+ 
+ .tile {
+     background: var(--glass-bg);
+     border: 1px solid var(--glass-border);
+     border-radius: 15px;
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     font-size: clamp(2rem, 10vw, 3.5rem);
+     cursor: pointer;
+     transition: all 0.2s ease;
+ }
+ 
+ .tile.playerX {
+     color: var(--neon-x);
+     text-shadow: 0 0 15px var(--neon-x);
+ }
+ 
+ .tile.playerO {
+     color: var(--neon-o);
+     text-shadow: 0 0 15px var(--neon-o);
+ }
+ 
+ .display-player.playerX { color: var(--neon-x); }
+ .display-player.playerO { color: var(--neon-o); }
+ 
+ .modal-overlay {
+     position: fixed;
+     top: 0;
+     left: 0;
+     width: 100%;
+     height: 100%;
+     background: rgba(0, 0, 0, 0.85);
+     display: none;
+     justify-content: center;
+     align-items: center;
+     z-index: 100;
+ }
+ 
+ .modal-overlay.active {
+     display: flex;
+ }
+
+ .modal-content {
+     background: var(--bg-color);
+     padding: 30px;
+     border-radius: 15px;
+     text-align: center;
+     border: 2px solid var(--glass-border);
+     box-shadow: 0 0 30px rgba(0, 243, 255, 0.2);
+     display: flex;
+     flex-direction: column;
+     gap: 20px;
+ }
+
+ .announcer {
+     font-size: 1.5rem;
+     font-weight: bold;
+ }
+
+ .modal-btn {
+     background: var(--neon-x);
+     color: var(--bg-color);
+     border: none;
+     padding: 10px 20px;
+     font-size: 1.2rem;
+     font-family: 'Orbitron', sans-serif;
+     border-radius: 5px;
+     cursor: pointer;
+     transition: all 0.2s ease;
+     font-weight: bold;
+ }
+ .modal-btn:hover {
+     background: white;
+     box-shadow: 0 0 15px var(--neon-x);
+ }
+
+ .turn-indicator {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    background: var(--glass-bg);
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: 1px solid var(--glass-border);
+    z-index: 10;
+ }

@@ -20,14 +20,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const roomInfo = document.getElementById('room-info');
     const displayRoomCode = document.getElementById('room-code-display');
     const btnCopy = document.getElementById('copy-btn');
-    const playAgainBtn = document.getElementById('play-again');
+    const btnQuitMatch = document.getElementById('btn-quit-match');
+    
+    // Modal Elements
     const modal = document.getElementById('modal');
     const announcer = document.getElementById('announcer');
     const errorToast = document.getElementById('error-toast');
+    const modalPlayerA = document.getElementById('modal-player-a');
+    const modalPlayerB = document.getElementById('modal-player-b');
+    const timerContainer = document.getElementById('timer-container');
+    const modalTimer = document.getElementById('modal-timer');
+    const playAgainBtn = document.getElementById('play-again');
+    const btnExitRoom = document.getElementById('btn-exit-room');
 
     let myRole = null;
     let isMyTurn = false;
     let currentTurn = 'X';
+    let countdownTimer = null;
 
     const showError = (msg) => {
         if(errorToast) {
@@ -96,6 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
         vicX.innerText = state.playerStats.X;
         vicO.innerText = state.playerStats.O;
         
+        clearInterval(countdownTimer);
         modal.classList.remove('active');
         
         // clear local board just in case
@@ -121,8 +131,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     socket.on('gameOver', (data) => {
-        const { winnerRole, scores } = data;
+        const { winnerRole, scores, gameData, reason } = data;
         updateScores(scores);
+        
+        // Setup visual morphs
+        const p1 = gameData?.playerNames?.X || 'PLAYER X';
+        const p2 = gameData?.playerNames?.O || 'PLAYER O';
+        
+        modalPlayerA.innerText = winnerRole === 'X' ? `${p1} 👑` : p1;
+        modalPlayerB.innerText = winnerRole === 'O' ? `${p2} 👑` : p2;
         
         if (winnerRole === 'TIE') {
             announcer.innerHTML = 'Game Ended in a <span style="color:var(--neon-magenta)">TIE</span>';
@@ -131,25 +148,31 @@ document.addEventListener('DOMContentLoaded', () => {
             announcer.innerHTML = `Player <span class="${playerClass}">${winnerRole}</span> Won`;
         }
         
+        if(reason) announcer.innerHTML += `<div style="font-size: 0.5em; color: #aaa; margin-top: 10px;">${reason}</div>`;
+        
         modal.classList.add('active');
+        timerContainer.style.display = 'block';
+        
+        // Initialize timer
+        let timeLeft = 10;
+        modalTimer.innerText = timeLeft;
+        clearInterval(countdownTimer);
+        countdownTimer = setInterval(() => {
+            timeLeft--;
+            modalTimer.innerText = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(countdownTimer);
+                window.location.href = '../index.html';
+            }
+        }, 1000);
         
         if (myRole === 'X') {
             playAgainBtn.style.display = 'block';
-            playAgainBtn.innerText = 'Play Again (Host)';
+            playAgainBtn.innerText = 'Play Again';
         } else {
             playAgainBtn.style.display = 'none';
         }
-    });
-
-    socket.on('gameRestarted', (data) => {
-        const state = data.gameState;
-        tiles.forEach(tile => {
-            tile.innerText = '';
-            tile.classList.remove('playerX', 'playerO');
-        });
-        modal.classList.remove('active');
-        currentTurn = 'X';
-        updateTurnDisplay();
+        btnExitRoom.style.display = 'block';
     });
 
     socket.on('playerDisconnected', (data) => {
@@ -178,11 +201,26 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => btnCopy.innerText = 'Copy', 2000);
         });
     });
+    
+    btnQuitMatch.addEventListener('click', () => {
+         socket.emit('quitGame');
+    });
 
     playAgainBtn.addEventListener('click', () => {
         if (myRole === 'X') {
+            clearInterval(countdownTimer);
             playAgainBtn.style.display = 'none';
-            socket.emit('restartReq');
+            timerContainer.style.display = 'none';
+            
+            modalPlayerA.innerText = labelX.innerText;
+            modalPlayerB.innerText = 'Waiting...';
+            
+            socket.emit('playAgainReq');
         }
+    });
+    
+    btnExitRoom.addEventListener('click', () => {
+        if(myRole === 'X') socket.emit('hostExit');
+        window.location.href = '../index.html';
     });
 });

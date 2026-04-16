@@ -51,7 +51,7 @@
                 <button id="btn-create-room" class="action-btn btn-cyan">Create Room [HOST]</button>
 
                 <div class="join-group">
-                    <input type="text" id="room-code-input" class="join-input" placeholder="ROOM ID" maxlength="6">
+                    <input type="text" id="room-code-input" class="join-input" placeholder="ROOM ID" maxlength="4">
                     <button id="btn-join-room" class="action-btn btn-magenta">Join</button>
                 </div>
 
@@ -87,6 +87,17 @@
     <div id="error-toast" style="display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #ff3860; color: white; padding: 10px 20px; border-radius: 5px; z-index: 200; box-shadow: 0 0 10px rgba(255,56,96,0.5);">
     </div>
 
+    <!-- Invite Toast -->
+    <div id="invite-toast" style="display: none; position: fixed; top: 20px; right: 20px; background: rgba(10, 10, 30, 0.95); color: white; padding: 20px; border-radius: 10px; border: 1px solid var(--neon-cyan); box-shadow: 0 0 15px rgba(0, 243, 255, 0.3); z-index: 300;">
+        <h3 style="margin-bottom: 10px; color: var(--neon-cyan);">Match Request!</h3>
+        <p><span id="invite-host-name" style="font-weight: bold; color: var(--neon-x);"></span> wants to play again!</p>
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button id="btn-accept-invite" class="action-btn btn-cyan" style="padding: 10px; font-size: 0.9rem;">Join</button>
+            <button id="btn-decline-invite" class="action-btn btn-white" style="padding: 10px; font-size: 0.9rem;">Decline</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
     <script src="assets/js/script.js"></script>
 </body>
 

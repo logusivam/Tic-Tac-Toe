@@ -48,18 +48,32 @@
         <div class="tile"></div>
     </main>
 
-    <div class="controls">
+    <div class="controls" style="display: flex; gap: 10px; justify-content: center;">
         <div id="room-info" style="display: none; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px; border: 1px solid var(--neon-cyan);">
             ROOM: <span id="room-code-display" style="font-weight: bold; margin-right: 15px;">XXXX</span>
             <button id="copy-btn" class="action-btn" style="padding: 5px 15px; font-size: 0.8em; margin: 0;">Copy</button>
         </div>
+        <button id="btn-quit-match" class="action-btn" style="border-color: #ff3860; color: #ff3860; margin: 0; padding: 10px;">Quit Match</button>
     </div>
 
     <!-- Game Over Modal -->
     <div class="modal-overlay" id="modal">
         <div class="modal-content">
+            <h2 id="win-status-title" style="color: var(--neon-cyan); margin-bottom: 5px;">GAME OVER</h2>
             <div class="announcer" id="announcer"></div>
+            
+            <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin: 20px 0; font-size: 1.2rem;">
+                <div id="modal-player-a" style="font-weight: bold;">Player A</div>
+                <div style="color: #555;">VS</div>
+                <div id="modal-player-b" style="font-weight: bold;">Waiting...</div>
+            </div>
+
+            <div id="timer-container" style="color: #aaa; margin-bottom: 20px;">
+                Closing in <span id="modal-timer" style="color: white; font-weight: bold;">10</span>s
+            </div>
+
             <button class="modal-btn" id="play-again">Play Again</button>
+            <button class="modal-btn" id="btn-exit-room" style="background: transparent; border: 2px solid #555; color: #aaa; margin-top: 10px;">Exit</button>
         </div>
     </div>
 

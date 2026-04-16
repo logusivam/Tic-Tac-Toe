@@ -1,4 +1,8 @@
 window.addEventListener('DOMContentLoaded', () => {
+    let socket = null;
+    if (typeof io !== 'undefined') {
+        socket = io();
+    }
     // Buttons
     const btnCreate = document.getElementById('btn-create-room');
     const btnJoin = document.getElementById('btn-join-room');
@@ -13,9 +17,46 @@ window.addEventListener('DOMContentLoaded', () => {
     const ageInput = document.getElementById('user-age');
     const errorMsg = document.getElementById('user-modal-error');
     const errorToast = document.getElementById('error-toast');
+    
+    const inviteToast = document.getElementById('invite-toast');
+    const inviteHostName = document.getElementById('invite-host-name');
+    const btnAcceptInvite = document.getElementById('btn-accept-invite');
+    const btnDeclineInvite = document.getElementById('btn-decline-invite');
 
     let pendingAction = null; // 'create' or 'join'
     let pendingRoomCode = null;
+    
+    // Register global user map if socket exists
+    if (socket) {
+        const savedGlobalId = sessionStorage.getItem('userId');
+        if (savedGlobalId) {
+            socket.emit('registerUser', { userId: savedGlobalId });
+        }
+        
+        socket.on('playAgainInvite', ({ roomId, hostName }) => {
+            inviteHostName.innerText = hostName;
+            inviteToast.style.display = 'block';
+            
+            btnAcceptInvite.onclick = () => {
+                inviteToast.style.display = 'none';
+                simulateConnection(btnJoin, `CONNECTING...`, () => {
+                    window.location.href = `${gameFileUrl}?mode=join&room=${roomId}&userId=${savedGlobalId || sessionStorage.getItem('userId')}`;
+                });
+            };
+            
+            btnDeclineInvite.onclick = () => {
+                inviteToast.style.display = 'none';
+            };
+        });
+        
+        socket.on('roomCheckResult', ({ valid, message }) => {
+            if (valid) {
+                 showModal('join', pendingRoomCode);
+            } else {
+                 showError(message || 'Invalid Room ID');
+            }
+        });
+    }
 
     // Path to your external game file
     const gameFileUrl = 'games/gamePlay.html';
@@ -30,7 +71,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const showModal = (action, code = null) => {
         // Ask for user every time if you want, but caching is better
-        const savedUserId = localStorage.getItem('userId');
+        const savedUserId = sessionStorage.getItem('userId');
         if (savedUserId) {
             proceedAction(action, code, savedUserId);
             return;
@@ -84,8 +125,8 @@ window.addEventListener('DOMContentLoaded', () => {
             if (!res.ok) throw new Error('Failed to create profile');
 
             const userData = await res.json();
-            localStorage.setItem('userId', userData._id);
-            localStorage.setItem('userName', userData.name);
+            sessionStorage.setItem('userId', userData._id);
+            sessionStorage.setItem('userName', userData.name);
             
             hideModal();
             proceedAction(pendingAction, pendingRoomCode, userData._id);
@@ -122,7 +163,12 @@ window.addEventListener('DOMContentLoaded', () => {
     btnJoin.addEventListener('click', () => {
         const code = roomInput.value.trim().toUpperCase();
         if (code.length >= 3) {
-            showModal('join', code);
+            if (socket) {
+                pendingRoomCode = code; // temporarily store it
+                socket.emit('checkRoom', { roomId: code });
+            } else {
+                showModal('join', code);
+            }
         } else {
             roomInput.style.borderColor = '#ff3860';
             roomInput.style.boxShadow = '0 0 10px rgba(255, 56, 96, 0.5)';
@@ -130,11 +176,12 @@ window.addEventListener('DOMContentLoaded', () => {
                 roomInput.style.borderColor = 'rgba(255,255,255,0.1)';
                 roomInput.style.boxShadow = 'none';
             }, 1000);
+            showError('Room code must be at least 3 characters.');
         }
     });
 
     btnRandom.addEventListener('click', () => {
-        const savedUserId = localStorage.getItem('userId');
+        const savedUserId = sessionStorage.getItem('userId');
         if (!savedUserId) { showError("Create or Join Room to play first!"); return; }
         simulateConnection(btnRandom, 'SEARCHING GRID...', () => {
             window.location.href = `${gameFileUrl}?mode=random&userId=${savedUserId}`;
