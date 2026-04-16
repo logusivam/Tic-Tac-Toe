@@ -92,11 +92,11 @@ window.addEventListener('DOMContentLoaded', () => {
     const proceedAction = (action, roomCode, userId) => {
         if (action === 'create') {
             const newRoomCode = Math.random().toString(36).substring(2, 6).toUpperCase();
-            simulateConnection(btnCreate, `HOSTING ID: ${newRoomCode}...`, () => {
+            simulateConnection(btnCreate, `HOSTING...`, () => {
                 window.location.href = `${gameFileUrl}?mode=host&room=${newRoomCode}&userId=${userId}`;
             });
         } else if (action === 'join') {
-            simulateConnection(btnJoin, `CONNECTING...`, () => {
+            simulateConnection(btnJoin, `JOINING...`, () => {
                 window.location.href = `${gameFileUrl}?mode=join&room=${roomCode}&userId=${userId}`;
             });
         }
