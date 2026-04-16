@@ -1,7 +1,8 @@
 // Local Backend API Endpoint Mapping
-const Ishttps = window.location.protocol === 'https';
-export default BACKEND_URL = Ishttps ? 
+const isHttps = window.location.protocol === 'https:';
+const BACKEND_URL = isHttps ? 
     "https://tic-tac-toe-api-bqou.onrender.com" :
     "http://localhost:3000";
 
+export default BACKEND_URL;
 
