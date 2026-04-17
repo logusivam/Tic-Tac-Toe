@@ -30,7 +30,10 @@ app.use(express.json());
 // API Routes
 app.use('/api/v1/users', userRoutes);
 
-// Root route mapped to index.html is handled by express.static naturally
+// Health Check
+app.get('/api/v1/health', (req, res) => {
+    res.json({ status: 'ok', message: 'Server is running', timestamp: new Date().toISOString() });
+});
 
 // Setup Sockets
 gameSockets(io);
